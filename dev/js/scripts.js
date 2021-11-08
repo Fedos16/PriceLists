@@ -1,6 +1,6 @@
 async function FalseRequest(data, status) {
     if (status) {
-        alert(data.text);
+        showMessage(data.text);
     } else {
         let el_error = document.querySelector('.error');
         if (el_error) {
@@ -34,25 +34,97 @@ async function setQueryForServer(params_array, action_function) {
 
 }
 
-// Обработчик загруженных файлов
-function handleFiles(files) {
-    // Предположил, на всякий случай, что файлов может быть несколько. Перебираем их в массиве
-    ([...files]).forEach(uploadFile => {
+function showMessage(text) {
+    alert(text);
+}
 
-        const size = uploadFile.size;
-        const formatFile = uploadFile.type;
+function setDateForRow(data, header=false, inputHeaderCol=false) {
+    let code = '<tr>';
+    for (let row of data) {
+        let val = row;
+        if (!val) val = '';
+        let col = val;
+        if (inputHeaderCol) col = `<input type="text" value="${val}" class="only_border_bottom" placeholder="Мой ответ">`;
+        (header) ? code += `<th>${col}</th>` : code += `<td>${col}</td>`;
+    }
+    code += '</tr>';
 
-        // Проверяем, что файл меньше 100МБ
-        if (size / (1024 * 1024) > 100) {
-            filePickerComponent.value = '';
-            alert('Файле не более 100 МБ');
-        } else if (formatFile != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-            filePickerComponent.value = '';
-            alert('Файле не более 100 МБ');
+    let table = document.querySelector('table');
+    if (header) {
+        table.querySelector('thead').innerHTML = code;
+    } else {
+        table.querySelector('tbody').insertAdjacentHTML('beforeend', code);
+    }
+
+}
+function setDataTableFromExcelRows(array) {
+    if (Array.isArray(array)) {
+        if (array.length >= 1) {
+
+            let table = document.querySelector('table');
+            table.querySelector('thead').textContent = '';
+            table.querySelector('tbody').textContent = '';
+
+            const header = array[0];
+            setDateForRow(header, true, true);
+            for (let i=1; i < array.length; i++) {
+                if (i > 10) break;
+
+                setDateForRow(array[i], false, false);
+            }
         } else {
-            console.log('Что то делаем с файлом ...');
+            showMessage('Слишком мало строк для распознавания прайс-листа');
         }
-    })
+    } else {
+        showMessage('Excel считался неверно ...');
+    }
+}
+// Обработчик Excel файла
+function readExcel(file) {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, {
+            type: 'binary'
+        });
+
+        const sheetsNames = workbook.SheetNames;
+        const firstSheet = workbook.Sheets[sheetsNames[0]];
+
+        const xlRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+        setDataTableFromExcelRows(xlRows);
+
+    };
+
+    reader.onerror = function(err) {
+        showMessage(err);
+    };
+
+    reader.readAsBinaryString(file);
+}
+// Обработчик загруженных файлов
+function handleFile(uploadFile) {
+
+    const filePickerComponent = document.querySelector('#file');
+
+    const size = uploadFile.size;
+    const formatFile = uploadFile.type;
+
+    // Проверяем, что файл меньше 100МБ
+    if (size / (1024 * 1024) > 100) {
+        filePickerComponent.value = '';
+        showMessage('Файле не более 100 МБ');
+    } else if (formatFile != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        filePickerComponent.value = '';
+        showMessage('Формат не Excel');
+    } else {
+
+        readExcel(uploadFile);
+
+        console.log('Что то делаем с файлом ...');
+    }
 }
 
 function myUploadFile() {
@@ -82,10 +154,12 @@ function myUploadFile() {
     // Функция включения подсветки
     function highlight(e) {
         dropArea.classList.add('highlight');
+        dropArea.querySelector('p').textContent = 'Отпустите, чтобы загрузить';
     }
     // Функция отключения подсветки
     function unhighlight(e) {
         dropArea.classList.remove('highlight');
+        dropArea.querySelector('p').textContent = 'Перетащите файл или нажмите здесь';
     }
 
     // При отпускании файла над областью должны получить файл(ы) и вызвать для них обработчик
@@ -93,12 +167,12 @@ function myUploadFile() {
     function handleDrop(e) {
         let dt = e.dataTransfer;
         let files = dt.files;
-        handleFiles(files);
+        handleFile(files[0]);
     }
 
     inputFile.addEventListener('change', handleChange, false);
     function handleChange(e) {
-        handleFiles(this.files);
+        handleFile(this.files[0]);
     } 
 }
 
