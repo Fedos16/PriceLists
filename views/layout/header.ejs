@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Название компании</title>
+    <link rel="stylesheet" href="/stylesheets/styles.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+    <nav class="navigation">
+        <div class="container">
+            <div class="row">
+                <div class="col-m"><span class="logo">Прайс Листы</span></div>
+                <div class="col-m">
+                    <ul class="display_flex">
+                        <% for (let row of data.menu) { %>
+                            <% let className = ''; %>
+                            <% if (row.active) className = 'active__li'; %>
+                            <li class="<%= className %>"><a href="<%= row.href %>"><%= row.name %></a></li>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>

@@ -1,0 +1,52 @@
+<%- include ("./layout/header.ejs") %>
+
+<div class="container">
+    <div class="panel">
+        <div class="panel_item panel_item_new">
+            <div class="panel_item_row">
+                <div class="panel_item_row__ico"></div>
+                <div class="panel_item_row__name">Новый прайс лист</div>
+                <div class="panel_item_row__control"></div>
+            </div>
+        </div>
+        <div class="panel_item">
+            <div class="panel_item_row">
+                <div class="panel_item_row__ico"></div>
+                <div class="panel_item_row__name">Генеральный прайс-лист</div>
+                <div class="panel_item_row__control"></div>
+            </div>
+        </div>
+        <div class="panel_item">
+            <div class="panel_item_row">
+                <div class="panel_item_row__ico"></div>
+                <div class="panel_item_row__name">Поставщик №1</div>
+                <div class="panel_item_row__control"></div>
+            </div>
+        </div>
+        <div class="panel_item">
+            <div class="panel_item_row">
+                <div class="panel_item_row__ico"></div>
+                <div class="panel_item_row__name">Поставщик №2</div>
+                <div class="panel_item_row__control"></div>
+            </div>
+        </div>
+        <div class="panel_item">
+            <div class="panel_item_row">
+                <div class="panel_item_row__ico"></div>
+                <div class="panel_item_row__name">Поставщик №3</div>
+                <div class="panel_item_row__control"></div>
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="row">
+            <div class="drop_area">
+                <p>Перетащите файл или нажмите здесь</p>
+                <label for="file" class="button_upload">Загрузить</label>
+                <input type="file" id="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include ("./layout/footer.ejs") %>
