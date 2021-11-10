@@ -23,6 +23,10 @@ input[type="file"] {
     display: none;
 }
 
+.hidden {
+    display: none;
+}
+
 table {
 	width: 100%;
 	border: none;
@@ -191,6 +195,15 @@ table tbody tr td:last-child {
 .panel_item:not(.panel_item_new):hover {
     background-color: $color-hover-gray;
 }
+.panel_item:not(.panel_item_new):hover + .control {
+    display: block;
+}
+.panel_item_row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 .panel_item_new {
     border: 2px dashed $color-green;
     color: $color-green;
@@ -198,9 +211,35 @@ table tbody tr td:last-child {
     justify-content: center;
     cursor: pointer;
 }
+.panel_item_new .panel_item_row {
+    justify-content: center;
+}
 .panel_item_new:hover {
     border-style: solid;
     background-color: white;
+}
+.panel_item_row_control {
+    display: flex;
+}
+.control {
+    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+}
+.control:last-child {
+    margin-right: 0px;
+}
+.control:hover {
+    transform: scale(1.2);
+}
+.control__edit {
+    background-image: url('/images/i-edit.svg');
+    background-size: cover;
+}
+.control__remove {
+    background-image: url('/images/i-close_remove.svg');
+    background-size: cover;
+    filter: invert(31%) sepia(98%) saturate(3840%) hue-rotate(2deg) brightness(102%) contrast(108%);
 }
 .content {
     position: relative;

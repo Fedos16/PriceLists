@@ -81,31 +81,32 @@ function setDataTableFromExcelRows(array) {
 }
 // Обработчик Excel файла
 function readExcel(file) {
-    const reader = new FileReader();
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, {
+                type: 'binary'
+            });
 
-    reader.onload = function(e) {
-        const data = e.target.result;
-        const workbook = XLSX.read(data, {
-            type: 'binary'
-        });
+            const sheetsNames = workbook.SheetNames;
+            const firstSheet = workbook.Sheets[sheetsNames[0]];
 
-        const sheetsNames = workbook.SheetNames;
-        const firstSheet = workbook.Sheets[sheetsNames[0]];
+            const xlRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-        const xlRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            resolve(xlRows);
 
-        setDataTableFromExcelRows(xlRows);
+        };
 
-    };
+        reader.onerror = function(err) {
+            reject([]);
+        };
 
-    reader.onerror = function(err) {
-        showMessage(err);
-    };
-
-    reader.readAsBinaryString(file);
+        reader.readAsBinaryString(file);
+    })
 }
 // Обработчик загруженных файлов
-function handleFile(uploadFile) {
+async function handleFile(uploadFile) {
 
     const filePickerComponent = document.querySelector('#file');
 
@@ -121,12 +122,12 @@ function handleFile(uploadFile) {
         showMessage('Формат не Excel');
     } else {
 
-        readExcel(uploadFile);
-
-        console.log('Что то делаем с файлом ...');
+        let rows = await readExcel(uploadFile);
+        setDataTableFromExcelRows(rows);
     }
 }
 
+// Функция, которая реализует DRAG AND DROP
 function myUploadFile() {
     // Получаем область для перетаскивания файлов
     let dropArea = document.querySelector('.drop_area');
@@ -176,7 +177,54 @@ function myUploadFile() {
     } 
 }
 
+// Функция создания прайс листа
+function actionSetPriceList() {
+    function savePriceListName(e) {
+        const name = e.target.value;
+        if (!name) {
+            showMessage('Имя не заполнено');
+            return;
+        }
+        const div = e.target.closest('div');
+        div.textContent = name;
+    }
+    function setNewPriceListName() {
+        let block = document.querySelector('.panel');
+
+        let inputNewPrice = document.querySelector('#input_new_pricelist');
+        if (inputNewPrice) return;
+        
+        block.insertAdjacentHTML('beforeend', `
+        <div class="panel_item">
+            <div class="panel_item_row">
+                <div class="panel_item_row__name"><input type="text" id="input_new_pricelist" class="only_border_bottom" placeholder="Введите имя прайс листа"></div>
+                <div class="panel_item_row_control">
+                    <div class="control control__edit hidden"></div>
+                    <div class="control control__remove"></div>
+                </div>
+            </div>
+        </div>
+        `);
+
+        inputNewPrice = document.querySelector('#input_new_pricelist');
+        inputNewPrice.addEventListener('focusout', savePriceListName);
+        inputNewPrice.addEventListener('keyup', (e) => {
+            if (String(e.key).toLocaleLowerCase() == 'enter') {
+                e.preventDefault();
+                savePriceListName(e);
+            }
+        });
+        inputNewPrice.focus();
+
+    }
+    let btn = document.querySelector('.panel_item_new');
+    if (btn) btn.addEventListener('click', setNewPriceListName);
+}
+
 window.onload = async () => {
     console.log('Page Loaded ...');
     myUploadFile();
+
+    actionSetPriceList();
+
 }
