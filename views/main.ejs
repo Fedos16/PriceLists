@@ -1,7 +1,31 @@
 <%- include ("./layout/header.ejs") %>
 
 <div class="container">
-    <h1>Рабочая область</h1>
+    <div class="content">
+        <div class="row align_row_center">
+            <div class="col-m">
+                <p>Мой прайс</p>
+                <input type="text" class="ShowItemList" placeholder="Мой ответ" readonly>
+            </div>
+            <div class="col-m">
+                <p>Прайс поставщика</p>
+                <input type="text" class="ShowItemList" placeholder="Мой ответ" readonly>
+            </div>
+        </div>
+        <div class="row">
+            <div class="drop_area" id="main_uploads">
+                <p>Перетащите файл или нажмите кнопку</p>
+                <label for="file" class="button_upload">Загрузить</label>
+                <input type="file" id="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple>
+            </div>
+        </div>
+        <div class="row">
+            <table class="data_table">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <%- include ("./layout/footer.ejs") %>
