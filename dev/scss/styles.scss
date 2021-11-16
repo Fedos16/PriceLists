@@ -253,6 +253,7 @@ table tbody tr td:last-child {
 }
 .panel_item_row {
     width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -275,6 +276,12 @@ table tbody tr td:last-child {
 .panel_item_new:hover {
     border-style: solid;
     background-color: white;
+}
+.panel_item_row__name {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
 }
 .panel_item_row_control {
     display: flex;

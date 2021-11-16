@@ -29,6 +29,19 @@ router.post('/setNewPriceList', async (req, res) => {
         res.json({ ok: false, text: 'Сервер временно недоступен' });
     }
 });
+router.post('/removePriceList', async (req, res) => {
+    try {
+        const { name } = req.body;
+
+        await models.Settings.findOneAndRemove({ Name: name });
+
+        res.json({ ok: true });
+
+    } catch(e) {
+        console.log(e);
+        res.json({ ok: false, text: 'Сервер временно недоступен' });
+    }
+});
 
 
 router.post('/test', async (req, res) => {

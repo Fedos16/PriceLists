@@ -244,6 +244,22 @@ function toggleAdditionalElemenstForSettings(hidden=true) {
     }
 }
 
+// Функция отображения и записи данных о прайс листе в таблицу
+function setDataForPriceListSettings(data) {
+    document.querySelector('.rules_row').classList.remove('hidden');
+    document.querySelector('.actions_row').classList.remove('hidden');
+
+    let header = data.Data.Header;
+    let body = data.Data.Data;
+
+    clearTable();
+    
+    setDateForRow(header, true, true);
+    for (let row of body) {
+        setDateForRow(row)
+    }
+
+}
 // Изменение активного прайса в списке
 function changeStatePanelItem(e) {
     let itemsList = document.querySelectorAll('.panel_item_active');
@@ -251,10 +267,22 @@ function changeStatePanelItem(e) {
 
     e.target.closest('.panel_item').classList.add('panel_item_active');
 
+    const name = e.target.textContent;
+
+    const arrPriceList = INFO_ROW.PriceLists;
+
+    for (let row of arrPriceList) {
+        if (row.Name == name) {
+            setDataForPriceListSettings(row);
+            toggleDropArea(true);
+            return;
+        }
+    }
+    
     toggleDropArea(false);
 }
 function setEventForItemsPriceList() {
-    let items = document.querySelectorAll('.panel_item:not(.panel_item_new)');
+    let items = document.querySelectorAll('.panel_item_row__name');
     if (items.length > 0) {
         items.forEach(item => {
             item.removeEventListener('click', changeStatePanelItem);
@@ -262,14 +290,24 @@ function setEventForItemsPriceList() {
         })
     }
 }
+async function removePriceListSettings(e) {
+    function action_function() {
+        console.log('Прайс лист удален ...');
+    }
+    let url = 'savedata/removePriceList';
+    let name = e.target.closest('.panel_item_row').querySelector('.panel_item_row__name').textContent;
+    await setQueryForServer({ url, params: { name } }, action_function);
+}
 // Создаем новый блок в списке прайсов
 function setBlockForPriceListName(name=false) {
     // Функция удаления прайса из списка по кнопку
-    function removePriceList(e) {
+    async function removePriceList(e) {
+        await removePriceListSettings(e);
         e.target.closest('.panel_item').remove();
         toggleDropArea(true);
         clearTable();
         toggleAdditionalElemenstForSettings(true);
+
     }
     let block = document.querySelector('.panel');
 
@@ -334,6 +372,9 @@ function actionSetPriceList() {
             }
         });
         inputNewPrice.focus();
+
+        toggleAdditionalElemenstForSettings(true);
+        clearTable();
 
     }
     let btn = document.querySelector('.panel_item_new');
