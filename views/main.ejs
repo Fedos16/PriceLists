@@ -1,25 +1,106 @@
 <%- include ("./layout/header.ejs") %>
 
 <div class="container">
+    <div class="panel">
+        <div class="panel_item panel_item_active">
+            <div class="panel_item_row">
+                <div class="panel_item_row__ico ico_pending"></div>
+                <div class="panel_item_row__name main_uploads">Загрузка файлов</div>
+            </div>
+        </div>
+        <div class="panel_item">
+            <div class="panel_item_row">
+                <div class="panel_item_row__ico ico_pending"></div>
+                <div class="panel_item_row__name file_matching">Сопоставление файлов</div>
+            </div>
+        </div>
+        <div class="panel_item">
+            <div class="panel_item_row">
+                <div class="panel_item_row__ico ico_pending"></div>
+                <div class="panel_item_row__name file_templates">Шаблоны файлов</div>
+            </div>
+        </div>
+        <div class="panel_item">
+            <div class="panel_item_row">
+                <div class="panel_item_row__ico ico_pending"></div>
+                <div class="panel_item_row__name compare_rules">Правила сравнения</div>
+            </div>
+        </div>
+        <div class="panel_item">
+            <div class="panel_item_row">
+                <div class="panel_item_row__ico ico_pending"></div>
+                <div class="panel_item_row__name processing_files">Обработка файлов</div>
+            </div>
+        </div>
+    </div>
     <div class="content">
-        <div class="row">
-            <div class="drop_area" id="main_uploads">
+        <div class="row" id="main_uploads">
+            <div class="drop_area">
                 <p>Перетащите файл или нажмите кнопку</p>
                 <label for="file" class="button_upload">Загрузить</label>
                 <input type="file" id="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple>
             </div>
         </div>
-        <div class="row align_row_center hidden" id="block-input">
-            <div class="col-m">
-                <p>Мой прайс</p>
-                <input type="text" class="ShowItemList middle_input" id="main_price" placeholder="Нажмите, чтобы выбрать" readonly>
-            </div>
-            <div class="col-m">
-                <p>Прайс поставщика</p>
-                <input type="text" class="middle_input" id="other_price" placeholder="Авто подстановка" readonly>
+        <div class="row row_vertical hidden" id="file_matching">
+            <div class="row_title">Сопоставление файлов</div>
+            <div class="row align_row_center">
+                <div class="col-m">
+                    <p>Мой прайс</p>
+                    <input type="text" class="ShowItemList middle_input" id="main_price" placeholder="Нажмите, чтобы выбрать" readonly>
+                </div>
+                <div class="col-m">
+                    <p>Прайс поставщика</p>
+                    <input type="text" class="middle_input" id="other_price" placeholder="Авто подстановка" disabled>
+                </div>
             </div>
         </div>
-        <div class="row">
+        <div class="row row_vertical hidden" id="file_templates">
+            <div class="row_title">Шаблоны файлов</div>
+            <div class="row align_row_center">
+                <div class="col-m">
+                    <p>Мой прайс</p>
+                    <input type="text" class="ShowItemList middle_input" id="template_main" placeholder="Нажмите, чтобы выбрать" readonly>
+                </div>
+                <div class="col-m">
+                    <p>Прайс поставщика</p>
+                    <input type="text" class="ShowItemList middle_input" id="template_provider" placeholder="Нажмите, чтобы выбрать" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="row row_vertical hidden" id="compare_rules">
+            <div class="row_title">Правила сравнения</div>
+            <div class="row align_row_center">
+                <div class="col-m">
+                    <p>Поле из моего прайса</p>
+                    <input type="text" class="field_main ShowItemList middle_input" placeholder="Нажмите, чтобы выбрать" readonly>
+                </div>
+                <div class="col-m">
+                    <p>Поле из прайса поставщика</p>
+                    <input type="text" class="field_provider ShowItemList middle_input" placeholder="Нажмите, чтобы выбрать" readonly>
+                </div>
+                <div class="col-m">
+                    <p>Тип сравнения</p>
+                    <input type="text" class="middle_input" value="Полное совпадение" disabled>
+                </div>
+            </div>
+            <div class="row align_row_center">
+                <div class="col-m">
+                    <div class="btn_div new_rule"><img src=""><span class="btn_ico ico_add"></span><span>Новое правило</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="row row_vertical hidden" id="processing_files">
+            <div class="row_title">Обработка файлов</div>
+            <div class="row align_row_center">
+                <button class="btn btn_save" id="create_price" disabled>Создать прайс</button>
+                <button class="btn" id="create_compare" disabled>После объединения</button>
+                <button class="btn" id="create_no_supplier" disabled>Нет товаров у поставщика</button>
+                <button class="btn" id="create_dont_have" disabled>Нет товаров у меня</button>
+                <button class="btn btn_save" id="donwload_pricelist" disabled>Сохранить и скачать</button>
+            </div>
+            <div class="row align_row_center">
+                <p id="numRows">Строк в таблице: <b>...</b></p>
+            </div>
             <table class="data_table">
                 <thead></thead>
                 <tbody></tbody>

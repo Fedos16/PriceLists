@@ -21,8 +21,6 @@ async function ShowItemList(e) {
         let el_ul = document.querySelector('.ItemList ul');
         el_ul.textContent = '';
 
-        console.log(INFO_ROW.Arr);
-
         let ids = [];
         let val = document.querySelector('#val');
         if (val) val = val.value;
@@ -78,6 +76,37 @@ async function ShowItemList(e) {
         let arr = INFO_ROW.NamesPriceLists;
         setDataForList(arr);
         showList();
+    } else if (id_input == 'template_main' || id_input == 'template_provider') {
+
+        let priceLists = INFO_ROW.PriceLists;
+
+        let sourceArray = priceLists.map(item => { return item.Name });
+        let activeValue = document.querySelector('#template_provider').value;
+        if (id_input == 'template_provider') activeValue = document.querySelector('#template_main').value;
+
+        let arr = sourceArray.filter(item => {
+            if (item != activeValue) return item;
+        });
+
+        setDataForList(arr);
+        showList();
+    } else if (id_input == 'field_main' || id_input == 'field_provider') {
+        let namePrice = document.querySelector('#template_main').value;
+        if (id_input == 'field_provider') namePrice = document.querySelector('#template_provider').value;
+
+        const arrayPriceList = INFO_ROW.PriceLists;
+        let arr = [];
+
+        for (let row of arrayPriceList) {
+            if (row.Name == namePrice) {
+                arr = row.Data.Header;
+                break;
+            }
+        }
+
+        setDataForList(arr);
+        showList();
+
     }
 
     let itemsList = document.querySelectorAll('.ItemList ul li');
@@ -91,7 +120,41 @@ function slectChoice(e) {
     elem.value = li.textContent;
     document.querySelector('.ItemList').classList.add('hidden');
 
-    if (elem.id == 'main_price') changeValueMainInput();
+    const idElem = elem.id;
+    let classElem = elem.classList;
+    if (classElem.length > 0) classElem = classElem[0];
+
+    if (idElem == 'main_price') {
+        changeValueMainInput();
+        changeStatusItemPanelMain('file_matching', 'file_templates');
+        setTitleForTemplatesFilesInput();
+    } else if (idElem == 'template_main' || idElem == 'template_provider') {
+        let inputs = document.querySelectorAll('#file_templates input');
+        let status = true;
+        for (let element of inputs) {
+            if (!element.value) {
+                status = false;
+                break;
+            }
+        }
+        if (status) {
+            changeStatusItemPanelMain('file_templates', 'compare_rules');
+        }
+    } else if (classElem == 'field_main' || classElem == 'field_provider') {
+        let block = elem.closest('.row');
+        let inputs = block.querySelectorAll('input');
+        let status = true;
+        for (let element of inputs) {
+            if (!element.value) {
+                status = false;
+                break;
+            }
+        }
+        if (status) {
+            changeStatusItemPanelMain('compare_rules', 'processing_files', false);
+            document.querySelector('#create_price').disabled = false;
+        }
+    }
 }
 
 let elems = document.querySelectorAll('.ShowItemList');

@@ -30,10 +30,16 @@ input, select {
     padding: 0px 5px;
     border-radius: 3px;
 }
+input:disabled {
+    background-color: rgb(236, 236, 236);
+    color: $color-gray;
+}
+
 .middle_input {
     width: 400px;
     height: 40px;
-    font-size: 16px;
+    font-size: 14px;
+    padding: 0 20px;
 }
 
 .hidden {
@@ -89,15 +95,21 @@ table tbody tr td:last-child {
     border-radius: 5px;
     transition: 200ms;
 }
-.btn:hover {
+.btn:not(.btn:disabled):hover {
     border-color: $color-gray;
+}
+.btn:disabled {
+    background-color: $color-hover-gray;
+    color: $color-gray;
+    border-color: $color-gray !important;
+    cursor: not-allowed;
 }
 .btn_save {
     border-color: $color-green !important;
     color: $color-green;
     background-color: white;
 }
-.btn_save:hover {
+.btn_save:not(.btn:disabled):hover {
     background-color: $color-green;
     color: white;
 }
@@ -106,9 +118,37 @@ table tbody tr td:last-child {
     color: $color-red;
     background-color: white;
 }
-.btn_cancel:hover {
+.btn_cancel:not(.btn:disabled):hover {
     background-color: $color-red;
     color: white;
+}
+.btn_div {
+    width: 200px;
+    height: 40px;
+    border: 1px solid $color-gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: $color-gray;
+    font-weight: bold;
+    font-size: 14px;
+}
+.btn_div:hover {
+    border-color: $color-green;
+    color: $color-green;
+}
+.btn_div:hover .ico_add {
+    filter: invert(55%) sepia(85%) saturate(4258%) hue-rotate(88deg) brightness(118%) contrast(91%);
+}
+.btn_div .btn_ico {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+.ico_add {
+    background-image: url('/images/i-add.svg');
+    background-size: cover;
+    filter: invert(44%) sepia(0%) saturate(76%) hue-rotate(177deg) brightness(97%) contrast(88%);
 }
 
 .only_border_bottom {
@@ -175,7 +215,7 @@ table tbody tr td:last-child {
 }
 .navigation {
     width: 100%;
-    height: 80px;
+    height: 60px;
     background-color: $nav-background;
     color: $color-light;
     display: flex;
@@ -183,10 +223,22 @@ table tbody tr td:last-child {
     position: sticky;
     top: 0px;
     z-index: 2;
+    padding-left: 60px;
 }
 .row {
     width: 100%;
     display: flex;
+}
+.row_vertical {
+    flex-direction: column;
+}
+.row_title {
+    width: auto;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    font-weight: bold;
+    font-size: 16px;
+    color: $color-gray;
 }
 .align_row_center {
     justify-content: center;
@@ -208,7 +260,7 @@ table tbody tr td:last-child {
 .col-m p {
     margin-bottom: 5px;
     color: $color-gray;
-    font-weight: bold;
+    font-size: 14px;
 }
 .navigation ul li {
     padding: 5px 10px;
@@ -219,12 +271,12 @@ table tbody tr td:last-child {
     color: $color-light;
 }
 .logo {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
     user-select: none;
 }
 .active__li {
-    color: $second-color !important;
+    color: $color-blue !important;
 }
 .panel {
     width: 400px;
@@ -276,7 +328,7 @@ table tbody tr td:last-child {
     justify-content: center;
 }
 .panel_item_active {
-    border-color: $color-green;
+    border-color: $color-blue;
 }
 .panel_item_new:hover {
     border-style: solid;
@@ -287,6 +339,24 @@ table tbody tr td:last-child {
     height: 100%;
     display: flex;
     align-items: center;
+}
+.panel_item_row__ico {
+    min-width: 18px;
+    height: 18px;
+    margin-right: 20px;
+}
+.ico_pending {
+    background-image: url('/images/i-pending.svg');
+    background-size: cover;
+    filter: invert(74%) sepia(80%) saturate(5441%) hue-rotate(359deg) brightness(108%) contrast(111%);
+}
+.ico_done {
+    background-image: url('/images/i-done.svg');
+    background-size: cover;
+    filter: invert(55%) sepia(85%) saturate(4258%) hue-rotate(88deg) brightness(118%) contrast(91%);
+}
+.color_succefull {
+    color: $color-green;
 }
 .panel_item_row_control {
     display: flex;

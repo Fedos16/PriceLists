@@ -10,18 +10,16 @@
 </head>
 <body>
     <nav class="navigation">
-        <div class="container">
-            <div class="row">
-                <div class="col-m"><span class="logo">Прайс Листы</span></div>
-                <div class="col-m">
-                    <ul class="display_flex">
-                        <% for (let row of data.menu) { %>
-                            <% let className = ''; %>
-                            <% if (row.active) className = 'active__li'; %>
-                            <li class="<%= className %>"><a href="<%= row.href %>"><%= row.name %></a></li>
-                        <% } %>
-                    </ul>
-                </div>
+        <div class="row">
+            <div class="col-m"><span class="logo">Прайс Листы</span></div>
+            <div class="col-m">
+                <ul class="display_flex">
+                    <% for (let row of data.menu) { %>
+                        <% let className = ''; %>
+                        <% if (row.active) className = 'active__li'; %>
+                        <li class="<%= className %>"><a href="<%= row.href %>"><%= row.name %></a></li>
+                    <% } %>
+                </ul>
             </div>
         </div>
     </nav>

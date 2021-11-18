@@ -61,7 +61,7 @@ function setDateForRow(data, header=false, inputHeaderCol=false) {
 
 }
 // Создание таблицы
-function setDataTableFromExcelRows(array) {
+function setDataTableFromExcelRows(array, count=false, headerInput=false) {
     if (Array.isArray(array)) {
         if (array.length >= 1) {
 
@@ -70,9 +70,12 @@ function setDataTableFromExcelRows(array) {
             table.querySelector('tbody').textContent = '';
 
             const header = array[0];
-            setDateForRow(header, true, true);
+            setDateForRow(header, true, headerInput);
+
             for (let i=1; i < array.length; i++) {
-                if (i > 10) break;
+                if (count) {
+                    if (i > count) break;
+                }
 
                 setDateForRow(array[i], false, false);
             }
@@ -124,12 +127,13 @@ async function actionSettings(uploadFile) {
         showMessage('Формат не Excel');
     } else {
         let rows = await readExcel(uploadFile);
-        setDataTableFromExcelRows(rows);
+        setDataTableFromExcelRows(rows, 10, true);
 
         toggleDropArea(true);
         toggleAdditionalElemenstForSettings(false);
     }
 }
+
 // Обработчик загруженных файлов
 async function handleFile(files) {
     const filePickerComponent = document.querySelector('#file');
@@ -163,8 +167,7 @@ async function handleFile(files) {
         }
 
         INFO_ROW.NamesPriceLists = arrNames;
-        document.querySelector('#block-input').classList.remove('hidden');
-        document.querySelector('#main_uploads').classList.add('hidden');
+        changeStatusItemPanelMain('main_uploads', 'file_matching');
 
         return;
     }
@@ -211,18 +214,20 @@ function myUploadFile() {
     function handleDrop(e) {
         let dt = e.dataTransfer;
         let files = dt.files;
+        INFO_ROW.FILES = this.files;
         handleFile(files);
     }
 
     inputFile.addEventListener('change', handleChange, false);
     function handleChange(e) {
+        INFO_ROW.FILES = this.files;
         handleFile(this.files);
     } 
 }
 
 // Функция скрытия или отображения области для загрузки данных
 function toggleDropArea(hidden=true) {
-    const dropArea = document.querySelector('.drop_area');
+    let dropArea = document.querySelector('.drop_area');
     if (dropArea) {
         if (hidden) {
             dropArea.classList.add('hidden');
@@ -383,6 +388,7 @@ function actionSetPriceList() {
         inputNewPrice.focus();
 
         toggleAdditionalElemenstForSettings(true);
+        toggleDropArea(true);
         clearTable();
 
     }
@@ -441,11 +447,14 @@ async function saveSettingsPriceList() {
 
 }
 // Получение списка прайсов
-async function getPriceListsName() {
+async function getPriceListsName(createBlock=false) {
     async function action_function(data) {
         let arr = data.priceLists;
         if (arr.length > 0) {
             INFO_ROW.PriceLists = arr;
+
+            if (!createBlock) return;
+            
             for (let row of arr) {
                 let name = row.Name;
                 setBlockForPriceListName(name);
@@ -466,6 +475,260 @@ function changeValueMainInput() {
             break;
         }
     }
+}
+function setTitleForTemplatesFilesInput() {
+    let templateNames = document.querySelectorAll('#file_matching input');
+    let templatesTitle = document.querySelectorAll('#file_templates p');
+    
+    for (let i=0; i < templatesTitle.length; i++) {
+        templatesTitle[i].textContent = templateNames[i].value;
+    }
+
+}
+
+// Изменение состояние пунктов левого меню на основной странице...
+function changeStatusItemPanelMain(sId, nId, changeElement=true) {
+    
+    document.querySelector(`.${sId}`).closest('.panel_item_row').querySelector('.panel_item_row__ico').classList.replace('ico_pending', 'ico_done');
+    document.querySelector(`.${sId}`).classList.add('color_succefull');
+
+    if (changeElement) {
+        document.querySelector(`.${nId}`).closest('.panel_item').classList.add('panel_item_active');
+        document.querySelector(`#${nId}`).classList.remove('hidden');
+        document.querySelector(`#${sId}`).classList.add('hidden');
+        document.querySelector('.panel_item_active').classList.remove('panel_item_active');
+    }
+}
+async function actionWorkspace() {
+    // Вспомогательные функции
+    function unDisabledCurrentBtn(e) {
+        e.target.disabled = false;
+    }
+    function toggleDisabledBtns(status) {
+        let btns = document.querySelectorAll('#processing_files button');
+        if (btns.length > 0) {
+            btns.forEach(item => item.disabled = status);
+        }
+    }
+    async function getDataFiles() {
+
+        let dataMainFile = [];
+        let dataProviderFile = [];
+        let status = true;
+        let textError = '';
+
+        // 1. Получаем информацияю из загруженных файлов ...
+        let files = INFO_ROW.FILES;
+        if (files) {
+            let mainFile;
+            let providerFile;
+
+            let mainFileName = document.querySelector('#main_price').value;
+            let providerFileName = document.querySelector('#other_price').value;
+
+            for (let file of files) {
+                let nameFile = file.name.replace('.xlsx', '');
+                if (nameFile == mainFileName) mainFile = file;
+                if (nameFile == providerFileName) providerFile = file;
+            }
+
+            if (mainFile && providerFile) {
+                dataMainFile = await readExcel(mainFile);
+                dataProviderFile = await readExcel(providerFile);
+            } else {
+                status = false;
+                textError = 'Не найдены файлы';
+            }
+            
+        } else {
+            status = false;
+            textError = 'Не найден массив файлов';
+        }
+
+        return { status, textError, dataMainFile, dataProviderFile }
+    }
+    function compareArray(arrSource, arr, numSource, numArr) {
+        let returnArr = [];
+        for (let row of arrSource) {
+            let statusIn = false;
+            for (rowArr of arr) {
+                let valRow = String(row[numSource]).toLowerCase();
+                let valRowArr =  String(rowArr[numArr]).toLowerCase();
+                if (valRow == valRowArr) {
+                    statusIn = true;
+                    break;
+                }
+            }
+            if (!statusIn) {
+                returnArr.push(row);
+            }
+        }
+
+        return returnArr;
+    }
+    async function getNumRows() {
+        let numMain = -1;
+        let numProvider = -1;
+
+        let status = true;
+
+
+        let nameMainPrice = document.querySelector('#template_main').value;
+        let nameProviderPrice = document.querySelector('#template_provider').value;
+
+        let nameRowMainPrice = document.querySelector('.field_main').value;
+        let nameRowProviderPrice = document.querySelector('.field_provider').value;
+
+        const arrayPriceList = INFO_ROW.PriceLists;
+
+        for (let row of arrayPriceList) {
+            if (row.Name == nameMainPrice) {
+                let arr = row.Data.Header;
+                numMain = arr.indexOf(nameRowMainPrice);
+            }
+            if (row.Name == nameProviderPrice) {
+                let arr = row.Data.Header;
+                numProvider = arr.indexOf(nameRowProviderPrice);
+            }
+        }
+
+        console.log(` ${numMain} = ${numProvider}`)
+
+        if (numMain == -1 || numProvider == -1) status = false;
+
+        return { numMain, numProvider, status };
+    }
+
+    // Функции обработчики алгоритмов для кнопок
+    function compareFiles(mainArr, providerArr) {
+        setDataTableFromExcelRows(mainArr);
+    }
+    async function dontHave(mainArr, providerArr) {
+
+        const { numMain, numProvider, status } = await getNumRows();
+
+        if (!status) {
+            console.log(`Не определены индексы столбцов: ${numMain} = ${numProvider}`);
+            return;
+        }
+
+        let arr = compareArray(providerArr, mainArr, numProvider, numMain);
+        setDataTableFromExcelRows(arr);
+
+        let numRowsStatus = document.querySelector('#numRows');
+        if (numRowsStatus) numRows.innerHTML = `Строк в прайсе Поставщика: <b>${providerArr.length - 1}</b>, из них нет в Моем прайсе: <b>${arr.length-1}</b>`;
+    }
+    async function noSupplier(mainArr, providerArr) {
+
+        const { numMain, numProvider, status } = await getNumRows();
+
+        if (!status) {
+            console.log(`Не определены индексы столбцов: ${numMain} = ${numProvider}`);
+            return;
+        }
+
+        let arr = compareArray(mainArr, providerArr, numMain, numProvider);
+        setDataTableFromExcelRows(arr);
+
+        let numRowsStatus = document.querySelector('#numRows');
+        if (numRowsStatus) numRows.innerHTML = `Строк в Моем прайсе: <b>${mainArr.length - 1}</b>, из них нет у Поставщика: <b>${arr.length-1}</b>`;
+        
+    }
+
+    // Функции для кнопок
+    function changeStatePanelItemTwo(e) {
+        let mainBlock = e.target.closest('.panel_item');
+        document.querySelector('.panel_item_active').classList.remove('panel_item_active');
+        mainBlock.classList.add('panel_item_active');
+
+        let blockName = mainBlock.querySelector('.panel_item_row__name');
+        let classBlockName = blockName.classList;
+        if (classBlockName.length > 0) {
+            let name = classBlockName[1];
+            let blocks = document.querySelectorAll('.content .row');
+            for (let block of blocks) {
+                if (block.id) block.classList.add('hidden');
+            } 
+            document.querySelector(`#${name}`).classList.remove('hidden');
+        }
+
+    }
+    async function createPrice(e) {
+
+        e.target.disabled = true;
+        toggleDisabledBtns(true);
+        let { status, textError, dataMainFile, dataProviderFile } = await getDataFiles();
+        if (!status) {
+            showMessage(textError);
+            unDisabledCurrentBtn(e);
+            return;
+        }
+
+        compareFiles(dataMainFile, dataProviderFile);
+
+        unDisabledCurrentBtn(e);
+        toggleDisabledBtns(false);
+
+    }
+    async function createDontHave(e) {
+        e.target.disabled = true;
+        toggleDisabledBtns(true);
+        let { status, textError, dataMainFile, dataProviderFile } = await getDataFiles();
+        if (!status) {
+            showMessage(textError);
+            unDisabledCurrentBtn(e);
+            return;
+        }
+
+        await dontHave(dataMainFile, dataProviderFile);
+
+        unDisabledCurrentBtn(e);
+        toggleDisabledBtns(false);
+    }
+    async function createnoSupplier(e) {
+        e.target.disabled = true;
+        toggleDisabledBtns(true);
+        let { status, textError, dataMainFile, dataProviderFile } = await getDataFiles();
+        if (!status) {
+            showMessage(textError);
+            unDisabledCurrentBtn(e);
+            return;
+        }
+
+        await noSupplier(dataMainFile, dataProviderFile);
+
+        unDisabledCurrentBtn(e);
+        toggleDisabledBtns(false);
+    }
+    function createCompareFiles(e) {
+        showMessage('Функция в разработке ...');
+    }
+    function downloadData(e) {
+        showMessage('Функция в разработке ...')
+    }
+    
+    // Тело основной функции
+
+    let elems = document.querySelectorAll('.panel_item_row');
+    if (elems) {
+        elems.forEach(item => item.addEventListener('click', changeStatePanelItemTwo));
+    }
+
+    // Событие нажатия кнопки создания прайса
+    let btnCreatePrice = document.querySelector('#create_price');
+    if (btnCreatePrice) btnCreatePrice.addEventListener('click', createPrice);
+
+    let btnCreateCompare = document.querySelector('#create_compare');
+    if (btnCreateCompare) btnCreateCompare.addEventListener('click', createCompareFiles);
+
+    let btnCreateDontHave = document.querySelector('#create_dont_have');
+    if (btnCreateDontHave) btnCreateDontHave.addEventListener('click', createDontHave);
+
+    let btnCreateNoSupplier = document.querySelector('#create_no_supplier');
+    if (btnCreateNoSupplier) btnCreateNoSupplier.addEventListener('click', createnoSupplier);
+
+    let btnDownloadPriceList = document.querySelector('#donwload_pricelist');
+    if (btnDownloadPriceList) btnDownloadPriceList.addEventListener('click', downloadData);
 }
 
 window.onload = async () => {
@@ -495,7 +758,11 @@ window.onload = async () => {
     if (btnSaveSetting) btnSaveSetting.addEventListener('click', saveSettingsPriceList);
 
     if (urlPage == '/settings') {
+        await getPriceListsName(true);
+    } else {
         await getPriceListsName();
+        await actionWorkspace();
+
     }
 
 }
