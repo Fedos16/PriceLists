@@ -155,7 +155,16 @@ async function handleFile(files) {
             return;
         }
 
-        console.log('Обработчика еще не существует ...');
+        let arrNames = [];
+
+        for (let file of files) {
+            let name = file.name.replace('.xlsx', '');
+            arrNames.push(name);
+        }
+
+        INFO_ROW.NamesPriceLists = arrNames;
+        document.querySelector('#block-input').classList.remove('hidden');
+        document.querySelector('#main_uploads').classList.add('hidden');
 
         return;
     }
@@ -446,6 +455,17 @@ async function getPriceListsName() {
     let url = 'finddata/getPriceListsName';
 
     await setQueryForServer({ url, alert: true }, action_function);
+}
+
+function changeValueMainInput() {
+    let value = document.querySelector('#main_price').value;
+    let arrNames = INFO_ROW.NamesPriceLists;
+    for (let row of arrNames) {
+        if (row != value) {
+            document.querySelector('#other_price').value = row;
+            break;
+        }
+    }
 }
 
 window.onload = async () => {

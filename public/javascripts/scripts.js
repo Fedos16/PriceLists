@@ -74,9 +74,11 @@ async function ShowItemList(e) {
     el_list.style.left = `${left}px`;
     el_list.style.width = `${width}px`;
 
-    let arr = ['Строка 1', 'Строка 2'];
-    setDataForList(arr);
-    showList();
+    if (id_input == 'main_price') {
+        let arr = INFO_ROW.NamesPriceLists;
+        setDataForList(arr);
+        showList();
+    }
 
     let itemsList = document.querySelectorAll('.ItemList ul li');
     if (itemsList.length > 0) itemsList.forEach(item => item.addEventListener('click', slectChoice));
@@ -88,6 +90,8 @@ function slectChoice(e) {
 
     elem.value = li.textContent;
     document.querySelector('.ItemList').classList.add('hidden');
+
+    if (elem.id == 'main_price') changeValueMainInput();
 }
 
 let elems = document.querySelectorAll('.ShowItemList');
@@ -254,7 +258,16 @@ async function handleFile(files) {
             return;
         }
 
-        console.log('Обработчика еще не существует ...');
+        let arrNames = [];
+
+        for (let file of files) {
+            let name = file.name.replace('.xlsx', '');
+            arrNames.push(name);
+        }
+
+        INFO_ROW.NamesPriceLists = arrNames;
+        document.querySelector('#block-input').classList.remove('hidden');
+        document.querySelector('#main_uploads').classList.add('hidden');
 
         return;
     }
@@ -545,6 +558,17 @@ async function getPriceListsName() {
     let url = 'finddata/getPriceListsName';
 
     await setQueryForServer({ url, alert: true }, action_function);
+}
+
+function changeValueMainInput() {
+    let value = document.querySelector('#main_price').value;
+    let arrNames = INFO_ROW.NamesPriceLists;
+    for (let row of arrNames) {
+        if (row != value) {
+            document.querySelector('#other_price').value = row;
+            break;
+        }
+    }
 }
 
 window.onload = async () => {

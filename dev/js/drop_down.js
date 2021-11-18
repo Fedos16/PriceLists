@@ -74,9 +74,11 @@ async function ShowItemList(e) {
     el_list.style.left = `${left}px`;
     el_list.style.width = `${width}px`;
 
-    let arr = ['Строка 1', 'Строка 2'];
-    setDataForList(arr);
-    showList();
+    if (id_input == 'main_price') {
+        let arr = INFO_ROW.NamesPriceLists;
+        setDataForList(arr);
+        showList();
+    }
 
     let itemsList = document.querySelectorAll('.ItemList ul li');
     if (itemsList.length > 0) itemsList.forEach(item => item.addEventListener('click', slectChoice));
@@ -88,6 +90,8 @@ function slectChoice(e) {
 
     elem.value = li.textContent;
     document.querySelector('.ItemList').classList.add('hidden');
+
+    if (elem.id == 'main_price') changeValueMainInput();
 }
 
 let elems = document.querySelectorAll('.ShowItemList');
