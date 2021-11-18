@@ -6,55 +6,29 @@
             <div class="panel_item_row">
                 <div class="panel_item_row__ico"></div>
                 <div class="panel_item_row__name">Новый прайс лист</div>
-                <div class="panel_item_row__control"></div>
-            </div>
-        </div>
-        <div class="panel_item">
-            <div class="panel_item_row">
-                <div class="panel_item_row__ico"></div>
-                <div class="panel_item_row__name">Генеральный прайс-лист</div>
-                <div class="panel_item_row__control"></div>
-            </div>
-        </div>
-        <div class="panel_item">
-            <div class="panel_item_row">
-                <div class="panel_item_row__ico"></div>
-                <div class="panel_item_row__name">Поставщик №1</div>
-                <div class="panel_item_row__control"></div>
-            </div>
-        </div>
-        <div class="panel_item">
-            <div class="panel_item_row">
-                <div class="panel_item_row__ico"></div>
-                <div class="panel_item_row__name">Поставщик №2</div>
-                <div class="panel_item_row__control"></div>
-            </div>
-        </div>
-        <div class="panel_item">
-            <div class="panel_item_row">
-                <div class="panel_item_row__ico"></div>
-                <div class="panel_item_row__name">Поставщик №3</div>
-                <div class="panel_item_row__control"></div>
             </div>
         </div>
     </div>
     <div class="content">
+        <div class="row align_row_center rules_row hidden">
+            <button class="btn">Управление правилами</button>
+        </div>
         <div class="row">
-            <div class="drop_area">
-                <p>Перетащите файл или нажмите здесь</p>
+            <div class="drop_area hidden" id="settings_uploads">
+                <p>Перетащите файл или нажмите кнопку</p>
                 <label for="file" class="button_upload">Загрузить</label>
                 <input type="file" id="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
             </div>
         </div>
         <div class="row">
-            <table>
+            <table class="data_table">
                 <thead></thead>
                 <tbody></tbody>
             </table>
         </div>
+        <div class="row align_row_center actions_row hidden">
+            <button class="btn btn_save" id="settings_save">Сохранить</button>
+        </div>
     </div>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
 <%- include ("./layout/footer.ejs") %>

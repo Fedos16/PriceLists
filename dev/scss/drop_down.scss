@@ -1,0 +1,58 @@
+.ItemList {
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+    width: auto;
+    max-width: 500px;
+    height: auto;
+    max-height: 300px;
+    background-color: white;
+    border: 1px solid lightgray;
+    box-shadow: 0px 2px 5px 0px rgba(0,0,0,0.2);
+    position: absolute;
+    top: 100px;
+    left: 300px;
+    z-index: 10000;
+    overflow: auto;
+    padding: 10px 0px;
+}
+.ItemList .clear {
+    width: 100%;
+    height: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: red;
+    font-weight: bold;
+}
+.ItemList .clear:hover {
+    background-color: rgba(255, 0, 0, 0.2);
+}
+.ItemList ul {
+    max-height: 220px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: auto;
+}
+.ItemList ul li {
+    padding: 5px 10px;
+    text-align: left;
+}
+.ItemList ul.center-li li {
+    text-align: center;
+}
+.ItemList ul li:hover {
+    background-color: rgb(231, 231, 231);
+}
+.ItemList input {
+    width: auto;
+    max-width: 95%;
+    height: 20px;
+    border-radius: 5px;
+    border: 1px solid gray;
+    margin: 0px auto;
+    padding: 5px;
+    margin-bottom: 5px;
+    text-align: center;
+}
