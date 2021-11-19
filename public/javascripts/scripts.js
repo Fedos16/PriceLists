@@ -100,6 +100,9 @@ async function ShowItemList(e) {
         for (let row of arrayPriceList) {
             if (row.Name == namePrice) {
                 arr = row.Data.Header;
+                if (typeof arr[0] == 'object') {
+                    arr = arr.map(item => { return item.name });
+                }
                 break;
             }
         }
@@ -107,17 +110,34 @@ async function ShowItemList(e) {
         setDataForList(arr);
         showList();
 
+    } else if (id_input == 'header_field') {
+        let arr = ['Наименование', 'Артикул', 'Бренд', 'Цена', 'Остаток', 'Свое значение'];
+        let items = document.querySelectorAll('.header_field');
+        if (items.length > 0) {
+            for (let row of items) {
+                if (arr.includes(row.value)) {
+                    arr.splice(arr.indexOf(row.value), 1);
+                }
+            }
+        }
+        setDataForList(arr);
+        showList(false, true);
     }
 
     let itemsList = document.querySelectorAll('.ItemList ul li');
     if (itemsList.length > 0) itemsList.forEach(item => item.addEventListener('click', slectChoice));
+    let removeItem = document.querySelector('.ItemList .clear');
+    if (removeItem) removeItem.addEventListener('click', clearElementValue)
 }
 function slectChoice(e) {
     let elem = INFO_ROW.Element;
 
     let li = e.target.closest('li');
+    const value = li.textContent;
 
-    elem.value = li.textContent;
+    if (value == 'Ничего не найдено') return;
+
+    elem.value = value;
     document.querySelector('.ItemList').classList.add('hidden');
 
     const idElem = elem.id;
@@ -154,15 +174,48 @@ function slectChoice(e) {
             changeStatusItemPanelMain('compare_rules', 'processing_files', false);
             document.querySelector('#create_price').disabled = false;
         }
+    } else if (classElem == 'header_field') {
+        if (value == 'Свое значение') {
+            elem.value = '';
+            elem.readOnly = false;
+            elem.classList.remove('ShowItemList');
+            elem.focus();
+        } else {
+            elem.readOnly = true;
+        }
+
+        if (value == 'Цена') {
+            let newInput = document.createElement('input');
+            newInput.id = 'kef';
+            newInput.placeholder = 'Коэфициент';
+            newInput.className = 'only_border_bottom';
+            newInput.type = 'number';
+            elem.after(newInput);
+        } else {
+            let block = elem.parentNode;
+            let kef = block.querySelector('#kef');
+            if (kef) kef.remove();
+        }
+    }
+}
+function clearElementValue(e) {
+    let elem = INFO_ROW.Element;
+    if (elem) {
+        elem.value = '';
+        let block = elem.parentNode;
+        let kef = block.querySelector('#kef');
+        if (kef) kef.remove();
     }
 }
 
-let elems = document.querySelectorAll('.ShowItemList');
-if (elems.length > 0) {
-    elems.forEach(item => {
-        item.removeEventListener('click', ShowItemList);
-        item.addEventListener('click', ShowItemList);
-    });
+function activateShowItemList() {
+    let elems = document.querySelectorAll('.ShowItemList');
+    if (elems.length > 0) {
+        elems.forEach(item => {
+            item.removeEventListener('click', ShowItemList);
+            item.addEventListener('click', ShowItemList);
+        });
+    }
 }
 async function FalseRequest(data, status) {
     if (status) {
@@ -211,16 +264,33 @@ function setDateForRow(data, header=false, inputHeaderCol=false) {
     let code = '<tr>';
     for (let row of data) {
         let val = row;
+        let addInput = '';
+        let styleRow = '';
+        if (typeof row == 'object') {
+            if ('name' in row) {
+                val = row.name;
+            } else if ('value' in row) {
+                val = row.value;
+            }
+            
+            if (row.val) {
+                addInput = `<input type="number" value="${row.val}" id="kef" class="only_border_bottom" placeholder="Мой ответ">`;
+            }
+            if (row.change) {
+                styleRow = ` class="change_row_table"`;
+            }
+        }
         if (!val) val = '';
         let col = val;
-        if (inputHeaderCol) col = `<input type="text" value="${val}" class="only_border_bottom" placeholder="Мой ответ">`;
-        (header) ? code += `<th>${col}</th>` : code += `<td>${col}</td>`;
+        if (inputHeaderCol) col = `<input type="text" value="${val}" class="header_field ShowItemList only_border_bottom" placeholder="Мой ответ" readonly>${addInput}`;
+        (header) ? code += `<th>${col}</th>` : code += `<td${styleRow}>${col}</td>`;
     }
     code += '</tr>';
 
     let table = document.querySelector('table');
     if (header) {
         table.querySelector('thead').innerHTML = code;
+        activateShowItemList();
     } else {
         table.querySelector('tbody').insertAdjacentHTML('beforeend', code);
     }
@@ -451,11 +521,13 @@ function changeStatePanelItem(e) {
 
     const arrPriceList = INFO_ROW.PriceLists;
 
-    for (let row of arrPriceList) {
-        if (row.Name == name) {
-            setDataForPriceListSettings(row);
-            toggleDropArea(true);
-            return;
+    if (arrPriceList) {
+        for (let row of arrPriceList) {
+            if (row.Name == name) {
+                setDataForPriceListSettings(row);
+                toggleDropArea(true);
+                return;
+            }
         }
     }
     
@@ -568,10 +640,19 @@ async function saveSettingsPriceList() {
         let headInputs = document.querySelectorAll('table thead input');
         let arr = [];
         headInputs.forEach(item => {
-            if (!item.value) {
-                arr.push(false);
+            let value = item.value;
+            if (!value) {
+                if (item.id == 'kef') {
+                    arr[arr.length - 1].val = 1;
+                } else {
+                    arr.push(false);
+                }
             } else {
-                arr.push(item.value);
+                if (item.id == 'kef') {
+                    arr[arr.length - 1].val = value;
+                } else {
+                    arr.push({name: value, val: ''});
+                }
             }
         });
 
@@ -750,10 +831,16 @@ async function actionWorkspace() {
         for (let row of arrayPriceList) {
             if (row.Name == nameMainPrice) {
                 let arr = row.Data.Header;
+                if (typeof arr[0] == 'object') {
+                    arr = arr.map(item => { return item.name });
+                }
                 numMain = arr.indexOf(nameRowMainPrice);
             }
             if (row.Name == nameProviderPrice) {
                 let arr = row.Data.Header;
+                if (typeof arr[0] == 'object') {
+                    arr = arr.map(item => { return item.name });
+                }
                 numProvider = arr.indexOf(nameRowProviderPrice);
             }
         }
@@ -764,10 +851,80 @@ async function actionWorkspace() {
 
         return { numMain, numProvider, status };
     }
+    async function getNumRowForName(priceName, rowName) {
+
+        let num = -1;
+
+        const arrayPriceList = INFO_ROW.PriceLists;
+
+        for (let row of arrayPriceList) {
+            if (row.Name == priceName) {
+                let arr = row.Data.Header;
+                if (typeof arr[0] == 'object') {
+                    arr = arr.map(item => { return item.name });
+                }
+                num = arr.indexOf(rowName);
+            }
+        }
+
+        return num;
+    }
+    async function getExtraCharge(priceName, rowName) {
+        let num = 1;
+
+        const arrayPriceList = INFO_ROW.PriceLists;
+
+        for (let row of arrayPriceList) {
+            if (row.Name == priceName) {
+                let arr = row.Data.Header;
+                let source = row.Data.Header;
+                if (typeof arr[0] == 'object') {
+                    arr = arr.map(item => { return item.name });
+                }
+                let index = arr.indexOf(rowName);
+                num = source[index].val;
+            }
+        }
+
+        return num;
+    }
 
     // Функции обработчики алгоритмов для кнопок
-    function compareFiles(mainArr, providerArr) {
+    async function compareFiles(mainArr, providerArr) {
+        let nameMainPrice = document.querySelector('#template_main').value;
+        let nameProviderPrice = document.querySelector('#template_provider').value;
+
+        let numPriceMain = await getNumRowForName(nameMainPrice, 'Цена');
+        let numPriceProvider = await getNumRowForName(nameProviderPrice, 'Цена');
+
+        let extraCharge = await getExtraCharge(nameProviderPrice, 'Цена');
+
+        let { numMain, numProvider, status } = await getNumRows();
+
+        if (!status) {
+            showMessage('Ну удалось определить индексы сравниваемых полей');
+            return;
+        }
+
+        let index = 0;
+        for (let row of mainArr) {
+            for (rowArr of providerArr) {
+                let valRow = String(row[numMain]).toLowerCase();
+                let valRowArr = String(rowArr[numProvider]).toLowerCase();
+                if (valRow == valRowArr && index > 0) {
+                    
+                    let priceProvider = Number(rowArr[numPriceProvider]) * extraCharge;
+
+                    mainArr[index][numPriceMain] = { value: priceProvider, change: true };
+
+                    break;
+                }
+            }
+            index ++;
+        }
+
         setDataTableFromExcelRows(mainArr);
+
     }
     async function dontHave(mainArr, providerArr) {
 
@@ -830,7 +987,7 @@ async function actionWorkspace() {
             return;
         }
 
-        compareFiles(dataMainFile, dataProviderFile);
+        await compareFiles(dataMainFile, dataProviderFile);
 
         unDisabledCurrentBtn(e);
         toggleDisabledBtns(false);
@@ -866,8 +1023,20 @@ async function actionWorkspace() {
         unDisabledCurrentBtn(e);
         toggleDisabledBtns(false);
     }
-    function createCompareFiles(e) {
-        showMessage('Функция в разработке ...');
+    async function createCompareFiles(e) {
+        e.target.disabled = true;
+        toggleDisabledBtns(true);
+        let { status, textError, dataMainFile, dataProviderFile } = await getDataFiles();
+        if (!status) {
+            showMessage(textError);
+            unDisabledCurrentBtn(e);
+            return;
+        }
+
+        await compareFiles(dataMainFile, dataProviderFile);
+
+        unDisabledCurrentBtn(e);
+        toggleDisabledBtns(false);
     }
     function downloadData(e) {
         showMessage('Функция в разработке ...')
@@ -900,6 +1069,8 @@ async function actionWorkspace() {
 window.onload = async () => {
 
     const urlPage = window.location.pathname;
+
+    activateShowItemList();
 
     myUploadFile();
 

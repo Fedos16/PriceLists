@@ -100,6 +100,9 @@ async function ShowItemList(e) {
         for (let row of arrayPriceList) {
             if (row.Name == namePrice) {
                 arr = row.Data.Header;
+                if (typeof arr[0] == 'object') {
+                    arr = arr.map(item => { return item.name });
+                }
                 break;
             }
         }
@@ -107,17 +110,34 @@ async function ShowItemList(e) {
         setDataForList(arr);
         showList();
 
+    } else if (id_input == 'header_field') {
+        let arr = ['Наименование', 'Артикул', 'Бренд', 'Цена', 'Остаток', 'Свое значение'];
+        let items = document.querySelectorAll('.header_field');
+        if (items.length > 0) {
+            for (let row of items) {
+                if (arr.includes(row.value)) {
+                    arr.splice(arr.indexOf(row.value), 1);
+                }
+            }
+        }
+        setDataForList(arr);
+        showList(false, true);
     }
 
     let itemsList = document.querySelectorAll('.ItemList ul li');
     if (itemsList.length > 0) itemsList.forEach(item => item.addEventListener('click', slectChoice));
+    let removeItem = document.querySelector('.ItemList .clear');
+    if (removeItem) removeItem.addEventListener('click', clearElementValue)
 }
 function slectChoice(e) {
     let elem = INFO_ROW.Element;
 
     let li = e.target.closest('li');
+    const value = li.textContent;
 
-    elem.value = li.textContent;
+    if (value == 'Ничего не найдено') return;
+
+    elem.value = value;
     document.querySelector('.ItemList').classList.add('hidden');
 
     const idElem = elem.id;
@@ -154,13 +174,46 @@ function slectChoice(e) {
             changeStatusItemPanelMain('compare_rules', 'processing_files', false);
             document.querySelector('#create_price').disabled = false;
         }
+    } else if (classElem == 'header_field') {
+        if (value == 'Свое значение') {
+            elem.value = '';
+            elem.readOnly = false;
+            elem.classList.remove('ShowItemList');
+            elem.focus();
+        } else {
+            elem.readOnly = true;
+        }
+
+        if (value == 'Цена') {
+            let newInput = document.createElement('input');
+            newInput.id = 'kef';
+            newInput.placeholder = 'Коэфициент';
+            newInput.className = 'only_border_bottom';
+            newInput.type = 'number';
+            elem.after(newInput);
+        } else {
+            let block = elem.parentNode;
+            let kef = block.querySelector('#kef');
+            if (kef) kef.remove();
+        }
+    }
+}
+function clearElementValue(e) {
+    let elem = INFO_ROW.Element;
+    if (elem) {
+        elem.value = '';
+        let block = elem.parentNode;
+        let kef = block.querySelector('#kef');
+        if (kef) kef.remove();
     }
 }
 
-let elems = document.querySelectorAll('.ShowItemList');
-if (elems.length > 0) {
-    elems.forEach(item => {
-        item.removeEventListener('click', ShowItemList);
-        item.addEventListener('click', ShowItemList);
-    });
+function activateShowItemList() {
+    let elems = document.querySelectorAll('.ShowItemList');
+    if (elems.length > 0) {
+        elems.forEach(item => {
+            item.removeEventListener('click', ShowItemList);
+            item.addEventListener('click', ShowItemList);
+        });
+    }
 }
