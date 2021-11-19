@@ -914,14 +914,17 @@ async function actionWorkspace() {
                 if (valRow == valRowArr && index > 0) {
                     
                     let priceProvider = Number(rowArr[numPriceProvider]) * extraCharge;
+                    let oldValue = row[numPriceMain];
 
-                    mainArr[index][numPriceMain] = { value: priceProvider, change: true };
+                    mainArr[index][numPriceMain] = { value: priceProvider, change: true, oldValue: oldValue };
 
                     break;
                 }
             }
             index ++;
         }
+
+        INFO_ROW.CURRENT_PRICELIST = mainArr;
 
         setDataTableFromExcelRows(mainArr);
 
@@ -1038,8 +1041,22 @@ async function actionWorkspace() {
         unDisabledCurrentBtn(e);
         toggleDisabledBtns(false);
     }
-    function downloadData(e) {
-        showMessage('Функция в разработке ...')
+    async function downloadData(e) {
+        function action_function(data) {
+            window.open(`/api/savedata/download/${data.fileName}`);
+        }
+
+        let url = 'savedata/saveAndDownloadPrice';
+
+        const format = 'excel';
+        const data = INFO_ROW.CURRENT_PRICELIST;
+
+        let params = { format, data };
+
+        e.target.disabled = false;
+        await setQueryForServer({ url, params, alert: true }, action_function);
+        e.target.disabled = false;
+
     }
     
     // Тело основной функции

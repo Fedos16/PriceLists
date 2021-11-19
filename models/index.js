@@ -1,4 +1,5 @@
 
 const Settings = require('./settings');
+const PriceList = require('./pricelist');
 
-module.exports = { Settings };
+module.exports = { Settings, PriceList };

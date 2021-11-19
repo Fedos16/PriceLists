@@ -12,6 +12,7 @@ const session = require('express-session');
 function setMenu(path) {
     const menuArray = [
         { name: 'Рабочая область', active: false, href: '/' },
+        { name: 'Статистика', active: false, href: '/statistics' },
         { name: 'Настройки', active: false, href: '/settings' }
     ];
 
@@ -32,6 +33,10 @@ router.get('/', (req, res) => {
 router.get('/settings', (req, res) => {
     const data = setMenu(req.path);
     res.render('settings.ejs', { data });
-})
+});
+router.get('/statistics', (req, res) => {
+    const data = setMenu(req.path);
+    res.render('statistics.ejs', { data });
+});
 
 module.exports = router;
