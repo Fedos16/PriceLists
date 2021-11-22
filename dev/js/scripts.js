@@ -36,22 +36,60 @@ async function setQueryForServer(params_array, action_function) {
 
 const INFO_ROW = {};
 
+// Вспомогательные функции
+function setActionTableButton() {
+    function ViewChange(e) {
+        e.target.id = 'view_all_changes';
+        e.target.removeEventListener('click', ViewChange);
+        e.target.addEventListener('click', ViewAll);
+
+        e.target.textContent = 'Показать все строки';
+
+        let tableRows = document.querySelectorAll('table tbody tr');
+        for (let row of tableRows) {
+            if (!row.querySelector('.change_row_table')) {
+                row.classList.add('hidden');
+            }
+        }
+    }
+    function ViewAll(e) {
+        e.target.id = 'view_only_changes';
+        e.target.removeEventListener('click', ViewAll);
+        e.target.addEventListener('click', ViewChange);
+
+        e.target.textContent = 'Показать только изменения';
+
+        let tableRows = document.querySelectorAll('table tbody tr');
+        for (let row of tableRows) {
+            row.classList.remove('hidden');
+        }
+    }
+    let btnViewChange = document.querySelector('#view_only_changes');
+    let btnViewAll = document.querySelector('#view_all_changes');
+
+    if (btnViewChange) btnViewChange.addEventListener('click', ViewChange);
+    if (btnViewAll) btnViewAll.addEventListener('click', ViewAll);
+}
+
 // Отображение сообщений об ошибках или уведомление
 function showMessage(text) {
     alert(text);
 }
 // Создание строки таблицы
-function setDateForRow(data, header=false, inputHeaderCol=false) {
-    let code = '<tr>';
+function setDateForRow(data, header=false, inputHeaderCol=false, changeView=false) {
+    let code = '';
+    let styleRow = '';
     for (let row of data) {
         let val = row;
         let addInput = '';
-        let styleRow = '';
-        if (typeof row == 'object') {
+        if (typeof row == 'object' && row) {
             if ('name' in row) {
                 val = row.name;
             } else if ('value' in row) {
                 val = row.value;
+                if ('oldValue' in row && changeView) {
+                    val = `${row.oldValue} ➞ ${val}`;
+                }
             }
             
             if (row.val) {
@@ -66,7 +104,7 @@ function setDateForRow(data, header=false, inputHeaderCol=false) {
         if (inputHeaderCol) col = `<input type="text" value="${val}" class="header_field ShowItemList only_border_bottom" placeholder="Мой ответ" readonly>${addInput}`;
         (header) ? code += `<th>${col}</th>` : code += `<td${styleRow}>${col}</td>`;
     }
-    code += '</tr>';
+    code = `<tr>${code}</tr>`;
 
     let table = document.querySelector('table');
     if (header) {
@@ -78,7 +116,7 @@ function setDateForRow(data, header=false, inputHeaderCol=false) {
 
 }
 // Создание таблицы
-function setDataTableFromExcelRows(array, count=false, headerInput=false) {
+function setDataTableFromExcelRows(array, count=false, headerInput=false, changeView=false) {
     if (Array.isArray(array)) {
         if (array.length >= 1) {
 
@@ -94,7 +132,7 @@ function setDataTableFromExcelRows(array, count=false, headerInput=false) {
                     if (i > count) break;
                 }
 
-                setDateForRow(array[i], false, false);
+                setDateForRow(array[i], false, false, changeView);
             }
         } else {
             showMessage('Слишком мало строк для распознавания прайс-листа');
@@ -527,6 +565,70 @@ function changeStatusItemPanelMain(sId, nId, changeElement=true) {
         document.querySelector('.panel_item_active').classList.remove('panel_item_active');
     }
 }
+
+// Сохранение данных
+async function downloadData(format) {
+    function action_function(data) {
+        window.open(`/api/savedata/download/${data.fileName}`);
+    }
+
+    let url = 'savedata/saveAndDownloadPrice';
+
+    const data = INFO_ROW.CURRENT_PRICELIST;
+
+    const provider = document.querySelector('#template_provider').value;
+
+    let params = { format, data, provider };
+
+    document.querySelector('#donwload_pricelist').disabled = true;
+    await setQueryForServer({ url, params, alert: true }, action_function);
+    document.querySelector('#donwload_pricelist').disabled = false;
+
+}
+// Получение поставщика и дат изменениях
+async function getProviderAndDatesProvider() {
+    function action_function(data) {
+        INFO_ROW.Providers = data.arr;
+        console.log();
+    }
+
+    let url = 'finddata/getProviderAndDatesProvider';
+
+    await setQueryForServer({ url }, action_function);
+}
+
+async function getDataPriceListForId() {
+    async function action_function(data) {
+        let arr = data.arr;
+        setDataTableFromExcelRows(arr, false, false, true);
+        document.querySelector('.align_row_center').classList.remove('hidden');
+    }
+    let obj = INFO_ROW.Providers;
+    let provider = document.querySelector('#provider_all').value;
+    let date = document.querySelector('#date_provider').value;
+
+    if (provider in obj) {
+        let _id;
+        Object.keys(obj[provider]).map(dateRow => {
+            if (new Date(Number(dateRow)).toLocaleString('ru-RU') == date) _id = obj[provider][dateRow];
+        });
+
+        if (_id) {
+            
+            let url = 'finddata/getPriceListForId';
+            let params = { _id };
+            await setQueryForServer({ url, params }, action_function);
+
+        } else {
+            showMessage('Не найден ID истории изменений');
+            return;
+        }
+    } else {
+        showMessage('Не найден Поставщик в истории изменений');
+        return;
+    }
+}
+
 async function actionWorkspace() {
     // Вспомогательные функции
     function unDisabledCurrentBtn(e) {
@@ -707,7 +809,7 @@ async function actionWorkspace() {
 
         INFO_ROW.CURRENT_PRICELIST = mainArr;
 
-        setDataTableFromExcelRows(mainArr);
+        setDataTableFromExcelRows(mainArr, false, false, true);
 
     }
     async function dontHave(mainArr, providerArr) {
@@ -721,9 +823,6 @@ async function actionWorkspace() {
 
         let arr = compareArray(providerArr, mainArr, numProvider, numMain);
         setDataTableFromExcelRows(arr);
-
-        let numRowsStatus = document.querySelector('#numRows');
-        if (numRowsStatus) numRows.innerHTML = `Строк в прайсе Поставщика: <b>${providerArr.length - 1}</b>, из них нет в Моем прайсе: <b>${arr.length-1}</b>`;
     }
     async function noSupplier(mainArr, providerArr) {
 
@@ -736,9 +835,6 @@ async function actionWorkspace() {
 
         let arr = compareArray(mainArr, providerArr, numMain, numProvider);
         setDataTableFromExcelRows(arr);
-
-        let numRowsStatus = document.querySelector('#numRows');
-        if (numRowsStatus) numRows.innerHTML = `Строк в Моем прайсе: <b>${mainArr.length - 1}</b>, из них нет у Поставщика: <b>${arr.length-1}</b>`;
         
     }
 
@@ -822,23 +918,6 @@ async function actionWorkspace() {
         unDisabledCurrentBtn(e);
         toggleDisabledBtns(false);
     }
-    async function downloadData(e) {
-        function action_function(data) {
-            window.open(`/api/savedata/download/${data.fileName}`);
-        }
-
-        let url = 'savedata/saveAndDownloadPrice';
-
-        const format = 'excel';
-        const data = INFO_ROW.CURRENT_PRICELIST;
-
-        let params = { format, data };
-
-        e.target.disabled = false;
-        await setQueryForServer({ url, params, alert: true }, action_function);
-        e.target.disabled = false;
-
-    }
     
     // Тело основной функции
 
@@ -859,9 +938,6 @@ async function actionWorkspace() {
 
     let btnCreateNoSupplier = document.querySelector('#create_no_supplier');
     if (btnCreateNoSupplier) btnCreateNoSupplier.addEventListener('click', createnoSupplier);
-
-    let btnDownloadPriceList = document.querySelector('#donwload_pricelist');
-    if (btnDownloadPriceList) btnDownloadPriceList.addEventListener('click', downloadData);
 }
 
 window.onload = async () => {
@@ -894,10 +970,13 @@ window.onload = async () => {
 
     if (urlPage == '/settings') {
         await getPriceListsName(true);
-    } else {
+    } else if (urlPage == '/') {
         await getPriceListsName();
         await actionWorkspace();
-
+    } else if (urlPage == '/statistics') {
+        await getProviderAndDatesProvider();
     }
+
+    setActionTableButton();
 
 }

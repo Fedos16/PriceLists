@@ -122,6 +122,24 @@ async function ShowItemList(e) {
         }
         setDataForList(arr);
         showList(false, true);
+    } else if (id_input == 'donwload_pricelist') {
+        let arr = ['xlsx', 'csv'];
+        setDataForList(arr);
+        showList();
+    } else if (id_input == 'provider_all') {
+        let arr = Object.keys(INFO_ROW.Providers);
+        setDataForList(arr);
+        showList(true);
+    } else if (id_input == 'date_provider') {
+        let obj = INFO_ROW.Providers;
+        let provider = document.querySelector('#provider_all').value;
+        let arr = [];
+        if (provider in obj) arr = Object.keys(obj[provider]);
+        arr = arr.map(item => { 
+            return `${new Date(Number(item)).toLocaleString('ru-RU')}`;
+        });
+        setDataForList(arr);
+        showList(true);
     }
 
     let itemsList = document.querySelectorAll('.ItemList ul li');
@@ -129,16 +147,16 @@ async function ShowItemList(e) {
     let removeItem = document.querySelector('.ItemList .clear');
     if (removeItem) removeItem.addEventListener('click', clearElementValue)
 }
-function slectChoice(e) {
+async function slectChoice(e) {
     let elem = INFO_ROW.Element;
 
     let li = e.target.closest('li');
     const value = li.textContent;
 
     if (value == 'Ничего не найдено') return;
+    document.querySelector('.ItemList').classList.add('hidden');
 
     elem.value = value;
-    document.querySelector('.ItemList').classList.add('hidden');
 
     const idElem = elem.id;
     let classElem = elem.classList;
@@ -196,6 +214,15 @@ function slectChoice(e) {
             let kef = block.querySelector('#kef');
             if (kef) kef.remove();
         }
+    } else if (idElem == 'donwload_pricelist') {
+        await downloadData(value);
+        return;
+    } else if (idElem == 'provider_all') {
+        document.querySelector('#date_provider').value = '';
+        clearTable();
+        document.querySelector('.align_row_center').classList.add('hidden');
+    } else if (idElem == 'date_provider') {
+        await getDataPriceListForId();
     }
 }
 function clearElementValue(e) {

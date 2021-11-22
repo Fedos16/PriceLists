@@ -48,7 +48,7 @@ router.post('/removePriceList', async (req, res) => {
 router.post('/saveAndDownloadPrice', async (req, res) => {
     try {
 
-        let { format, data } = req.body;
+        let { format, data, provider } = req.body;
 
         let rows = [];
         for (let row of data) {
@@ -71,17 +71,28 @@ router.post('/saveAndDownloadPrice', async (req, res) => {
             rows.push(arrRow);
         }
 
+        const now = new Date();
+
+        await models.PriceList.create({ Name: provider, Date: now, Data: data });
+
         const wb = new xl.Workbook();
         const ws = wb.addWorksheet('Данные');
 
         ws.addRows(rows);
 
-        let name = 'excelFile';
+        let name = 'fileName';
+        let fileName = `downloads/${name}.${format}`;
+        if (format == 'xlsx') {
+            await wb.xlsx.writeFile(fileName);
+        } else if (format == 'csv') {
+            await wb.csv.writeFile(fileName);
+        } else {
+            res.json({ ok: false, text: 'Неизвестный формат файла' });
+            return;
+        }
+        
 
-        let fileName = `downloads/${name}.xlsx`;
-        await wb.xlsx.writeFile(fileName);
-
-        res.json({ ok: true, fileName: name });
+        res.json({ ok: true, fileName: `${name}.${format}` });
 
     } catch(e) {
         console.log(e);
@@ -89,7 +100,7 @@ router.post('/saveAndDownloadPrice', async (req, res) => {
     }
 });
 router.get('/download/:name', (req, res) => {
-    let fileName = `downloads/${req.params.name}.xlsx`;
+    let fileName = `downloads/${req.params.name}`;
     res.download(fileName);
 });
 

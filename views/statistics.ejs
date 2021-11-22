@@ -1,7 +1,27 @@
 <%- include ("./layout/header.ejs") %>
 
 <div class="container">
-    <h1>Статистика</h1>
+    <div class="panel">
+        <div class="panel_item disabled_hover">
+            <div class="panel_item_row">
+                <input type="text" class="input_max ShowItemList" id="provider_all" placeholder="Поставщик" readonly>
+            </div>
+        </div>
+        <div class="panel_item disabled_hover">
+            <div class="panel_item_row">
+                <input type="text" class="input_max ShowItemList" id="date_provider" placeholder="Дата сопоставления" readonly>
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="row align_row_center hidden">
+            <button class="btn" id="view_only_changes">Показать только изменения</button>
+        </div>
+        <table class="data_table">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </div>
 
 <%- include ("./layout/footer.ejs") %>
