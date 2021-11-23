@@ -102,6 +102,7 @@ function setDateForRow(data, header=false, inputHeaderCol=false, changeView=fals
             }
         }
         if (!val) val = '';
+        if (val) val = String(val).trim();
         let col = val;
         if (inputHeaderCol) col = `<input type="text" value="${val}" class="header_field ShowItemList only_border_bottom" placeholder="Мой ответ" readonly>${addInput}`;
         (header) ? code += `<th>${col}</th>` : code += `<td${styleRow}>${col}</td>`;
@@ -793,14 +794,20 @@ async function actionWorkspace() {
             return;
         }
 
-        let newArray = [];
-
-        console.log(`${numPriceMain} - ${numPriceProvider}`);
+        if (numPriceMain == -1 || numPriceProvider == -1) {
+            if (numPriceMain == -1) {
+                showMessage('Не удалось определить поле ЦЕНА у нас');
+                return;
+            }
+            if (numPriceProvider == -1) {
+                showMessage('Не удалось определить поле ЦЕНА у поставщика');
+                return;
+            }
+        }
 
         let index = 0;
         for (let row of mainArr) {
             let valRow = String(row[numMain]).toLowerCase().trim();
-            let newRow = row;
 
             for (rowArr of providerArr) {
                 let valRowArr = String(rowArr[numProvider]).toLowerCase().trim();
@@ -812,19 +819,17 @@ async function actionWorkspace() {
                     let priceProvider = Number(rowArr[numPriceProvider]) * extraCharge;
                     let oldValue = row[numPriceMain];
                     
-                    newRow[numPriceMain] = { value: priceProvider, change: true, oldValue: oldValue };
+                    mainArr[index][numPriceMain] = { value: priceProvider, change: true, oldValue: oldValue };
                     break;
                 }
             }
-            
-            newArray.push(newRow);
 
             index ++;
         }
 
-        INFO_ROW.CURRENT_PRICELIST = newArray;
+        INFO_ROW.CURRENT_PRICELIST = mainArr;
 
-        setDataTableFromExcelRows(newArray, false, false, true);
+        setDataTableFromExcelRows(mainArr, false, false, true);
 
     }
     async function dontHave(mainArr, providerArr) {
