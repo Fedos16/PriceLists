@@ -795,6 +795,8 @@ async function actionWorkspace() {
 
         let newArray = [];
 
+        console.log(`${numPriceMain} - ${numPriceProvider}`);
+
         let index = 0;
         for (let row of mainArr) {
             let valRow = String(row[numMain]).toLowerCase().trim();
