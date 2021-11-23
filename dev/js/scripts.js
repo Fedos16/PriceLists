@@ -795,8 +795,11 @@ async function actionWorkspace() {
 
         let index = 0;
         for (let row of mainArr) {
+            let valRow = String(row[numMain]).toLowerCase().trim();
+            if (index < 100 && index > 0) {
+                console.log(valRow);
+            }
             for (rowArr of providerArr) {
-                let valRow = String(row[numMain]).toLowerCase().trim();
                 let valRowArr = String(rowArr[numProvider]).toLowerCase().trim();
                 if (valRow == valRowArr && index > 0) {
                     
