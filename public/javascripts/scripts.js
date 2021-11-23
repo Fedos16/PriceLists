@@ -334,7 +334,9 @@ function setDateForRow(data, header=false, inputHeaderCol=false, changeView=fals
             } else if ('value' in row) {
                 val = row.value;
                 if ('oldValue' in row && changeView) {
-                    val = `${row.oldValue} ➞ ${val}`;
+                    let oldValue = 'нет';
+                    if (row.oldValue) oldValue = row.oldValue;
+                    val = `${oldValue} ➞ ${val}`;
                 }
             }
             
@@ -1023,6 +1025,8 @@ async function actionWorkspace() {
         let nameMainPrice = document.querySelector('#template_main').value;
         let nameProviderPrice = document.querySelector('#template_provider').value;
 
+        console.log(`Price: ${mainArr.length} - Provider: ${providerArr.length}`);
+
         let numPriceMain = await getNumRowForName(nameMainPrice, 'Цена');
         let numPriceProvider = await getNumRowForName(nameProviderPrice, 'Цена');
 
@@ -1038,8 +1042,8 @@ async function actionWorkspace() {
         let index = 0;
         for (let row of mainArr) {
             for (rowArr of providerArr) {
-                let valRow = String(row[numMain]).toLowerCase();
-                let valRowArr = String(rowArr[numProvider]).toLowerCase();
+                let valRow = String(row[numMain]).toLowerCase().trim();
+                let valRowArr = String(rowArr[numProvider]).toLowerCase().trim();
                 if (valRow == valRowArr && index > 0) {
                     
                     let priceProvider = Number(rowArr[numPriceProvider]) * extraCharge;
