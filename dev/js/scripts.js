@@ -796,18 +796,13 @@ async function actionWorkspace() {
         let index = 0;
         for (let row of mainArr) {
             let valRow = String(row[numMain]).toLowerCase().trim();
-            
-            if (valRow == 'ns8pkl10') console.log(`Мой прайс нашел ...`);
 
             for (rowArr of providerArr) {
                 let valRowArr = String(rowArr[numProvider]).toLowerCase().trim();
-
-                if (index == 0) {
-                    if (valRowArr == 'ns8pkl10') console.log(`Поставщик нашел ...`);
-                    console.log(valRowArr);
-                }
                 
                 if (valRow == valRowArr && index > 0) {
+
+                    console.log(`Найдено совпадение: ${valRow}`);
                     
                     let priceProvider = Number(rowArr[numPriceProvider]) * extraCharge;
                     let oldValue = row[numPriceMain];
