@@ -793,9 +793,12 @@ async function actionWorkspace() {
             return;
         }
 
+        let newArray = [];
+
         let index = 0;
         for (let row of mainArr) {
             let valRow = String(row[numMain]).toLowerCase().trim();
+            let newRow = row;
 
             for (rowArr of providerArr) {
                 let valRowArr = String(rowArr[numProvider]).toLowerCase().trim();
@@ -806,18 +809,20 @@ async function actionWorkspace() {
                     
                     let priceProvider = Number(rowArr[numPriceProvider]) * extraCharge;
                     let oldValue = row[numPriceMain];
-
-                    mainArr[index][numPriceMain] = { value: priceProvider, change: true, oldValue: oldValue };
-
+                    
+                    newRow[numPriceMain] = { value: priceProvider, change: true, oldValue: oldValue };
                     break;
                 }
             }
+            
+            newArray.push(newRow);
+
             index ++;
         }
 
-        INFO_ROW.CURRENT_PRICELIST = mainArr;
+        INFO_ROW.CURRENT_PRICELIST = newArray;
 
-        setDataTableFromExcelRows(mainArr, false, false, true);
+        setDataTableFromExcelRows(newArray, false, false, true);
 
     }
     async function dontHave(mainArr, providerArr) {
