@@ -1042,11 +1042,14 @@ async function actionWorkspace() {
         let index = 0;
         for (let row of mainArr) {
             let valRow = String(row[numMain]).toLowerCase().trim();
-            if (index < 100 && index > 0) {
-                console.log(valRow);
-            }
+            
+            if (valRow == 'ns8pkl10') console.log(`Мой прайс нашел ...`);
+
             for (rowArr of providerArr) {
                 let valRowArr = String(rowArr[numProvider]).toLowerCase().trim();
+
+                if (valRowArr == 'ns8pkl10') console.log(`Поставщик нашел ...`);
+                
                 if (valRow == valRowArr && index > 0) {
                     
                     let priceProvider = Number(rowArr[numPriceProvider]) * extraCharge;
